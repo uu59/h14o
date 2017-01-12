@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+
+set -ue
+
+usage_exit () {
+  cat <<EOF >&2
+Usage: $0
+Options:
+  -p    Listen Port (default: 3333)
+  -b    Listen Bind (default: 127.0.0.1)
+  -f    Forward to here (default: http://localhost:3000/)
+  -h    Show this message
+EOF
+  exit 1
+}
+
+keyfile=`mktemp`
+certfile=`mktemp`
+configfile=`mktemp`
+
+key-file() {
+  server-key > "$keyfile"
+  echo $keyfile
+}
+
+cert-file() {
+  server-cert > "$certfile"
+  echo $certfile
+}
+
+template() {
+  cat <<CONF
+hosts:
+  "${LISTEN_BIND}":
+    listen:
+      port: ${LISTEN_PORT}
+      ssl:
+        key-file: $(key-file)
+        certificate-file: $(cert-file)
+    paths:
+      "":
+        proxy.reverse.url: "${FORWARD_ADDRESS}/"
+        proxy.timeout.keepalive: 0
+        proxy.preserve-host: ON
+CONF
+}
+
+generate-config() {
+  template > "$configfile"
+  echo $configfile
+}
+
+server-key() {
+cat <<"EOF"
+-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAwfOuLPr8wC+soVwOKQF2UlLbGxL3jczJcqLEbuPp+kYWf0iv
+TI9StGrEVIY+hCaSNmEcEqdOeB/CZBdxIUPEf1BuFj2DaCLpu/GsL6YvOxLIxZd/
+hioMYkEIXByIM0AcYBJ3XWT6VKwSavmKnqWlznMvG4jKQp3RrKh3H18w07TE6hpP
+Md6IDBDR/jHyFABWSXeUYEttFUIQz+kchvPoMXa0O143nUOUjNQeuvnXjSn4FQDG
+WG1Qqyog2O5+yumNMz4v6ecLplN2kRsccmNp3s7xYCd2iNgy/psBIoto+VQnGKAw
+OpzSrlUfwfBNLvem7CNozDRzWfUadbTPZjOCDQIDAQABAoIBAAUjN1HptBhDKwd7
+MMTVTRURLMyiy/vtmMh4l0t4rhH7GU11127nvQEacujqRW2qt+TI3b2AwQtdjACq
+vkxrRyE4ODJOntR7WEWqOS1p8YZXEQpq4O3k3z8bCeWmu9TfteC1nIPU0Oy9Qh+j
+TJC3QpUdZ/oKvZDWLV+tdrpWAy0YaPB9JmhK0fbo41yKngJv+B+338HhgCGchU30
+SYJFR92c7xZd1XPIwi1s8jbAT4l/N1Mu5WmBKjLgDhEcCb6KsYxgXZ4Uzo4axwWB
+lbE3muQy5iCUNQxTAPemkHBaApAsI/Y0+p31FyvqS3iuZvzanEHWIL68hiHbcvyc
+Iw6AgeECgYEA4jRZct2lI7BUVPwYPE6ypgmZi51aknIkkKe8HyBkD+pnjFuz2kf8
+WmRbp2MPKVLcoPmGN4G7gv3spN0tBzyJwT0OK97rj1W/+vgNwM5LQfOmbP3aKlzc
+klMMExXl2eErxSZAnh494lQ1DSkxRNqxCjwmEef68kd6h5oU8p3KgRMCgYEA23/E
+kAYucRSIPtyluJCDk/txk7XHRFp3UchiKBVW5y/vyjBXOIXpJl7d+b9cL7sTaaEM
+wYH23GrX46CbS4akNRgeBqGhJJX7uObTFHHDyijUaerOPMHM1ovGXRpxOKcYb8Hd
+rf29vXnC9wYvJ7OZB2L0s19Rj3ezqnGUHUdLdF8CgYAcmJuaPtTqnxb6K2hw7038
+WYhUsw7JJq7irqHEmZaswGhYwRsKhEEtuDQyA/7drYEAxKqoB7mJxMoOyXswyAFu
+MWbCOwsycpezhXpPnoS7EK9AZhMXeefUg7UqEIGfOq0K3lwa4R3Xp+eRA10cJD1v
+Ws1BRD9gM5MU43C0fygjiwKBgHJEGEq1vRWHD8pRyT/Ek4rE+gJgPiT6R2VewKKH
+QV9G2DjUY4N8Srx75GiwUshSRi/V9DMEekOSp2LLaCywIem17WOcXqwSHCHMoBPj
+iX5DNRkScFy2svD5gMFVE53fdtwu+z0pe84YhgNcx82ONFrhC+wY8feS5AgV6no3
+dDNXAoGBAKxRQwfQuXPEGHaZwumPgYDIvOjp6+/NiEURCbDQGv72/ny5+e5WeM7T
+w/cmTcm4/yNW63TJmveg1kdBBHwfsc0fqdzjcnB25nfBzD54orQ2DBrYegjBwGZf
+zfhPwpbzApxIiOfW5qT9eUPNie+SgCNuBV6oF8gnILLGS+65vrnK
+-----END RSA PRIVATE KEY-----
+EOF
+}
+
+server-cert() {
+cat <<"EOF"
+-----BEGIN CERTIFICATE-----
+MIID3DCCAsSgAwIBAgIJAMVr79Z5pJKvMA0GCSqGSIb3DQEBCwUAMFExCzAJBgNV
+BAYTAkFVMRMwEQYDVQQIEwpTb21lLVN0YXRlMSEwHwYDVQQKExhJbnRlcm5ldCBX
+aWRnaXRzIFB0eSBMdGQxCjAIBgNVBAMUASowIBcNMTcwMTEyMDgxOTU2WhgPMzAx
+NjA1MTUwODE5NTZaMFExCzAJBgNVBAYTAkFVMRMwEQYDVQQIEwpTb21lLVN0YXRl
+MSEwHwYDVQQKExhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQxCjAIBgNVBAMUASow
+ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDB864s+vzAL6yhXA4pAXZS
+UtsbEveNzMlyosRu4+n6RhZ/SK9Mj1K0asRUhj6EJpI2YRwSp054H8JkF3EhQ8R/
+UG4WPYNoIum78awvpi87EsjFl3+GKgxiQQhcHIgzQBxgEnddZPpUrBJq+YqepaXO
+cy8biMpCndGsqHcfXzDTtMTqGk8x3ogMENH+MfIUAFZJd5RgS20VQhDP6RyG8+gx
+drQ7XjedQ5SM1B66+deNKfgVAMZYbVCrKiDY7n7K6Y0zPi/p5wumU3aRGxxyY2ne
+zvFgJ3aI2DL+mwEii2j5VCcYoDA6nNKuVR/B8E0u96bsI2jMNHNZ9Rp1tM9mM4IN
+AgMBAAGjgbQwgbEwHQYDVR0OBBYEFObTQ5uu/abETty91rK/13nzLR8CMIGBBgNV
+HSMEejB4gBTm00Obrv2mxE7cvdayv9d58y0fAqFVpFMwUTELMAkGA1UEBhMCQVUx
+EzARBgNVBAgTClNvbWUtU3RhdGUxITAfBgNVBAoTGEludGVybmV0IFdpZGdpdHMg
+UHR5IEx0ZDEKMAgGA1UEAxQBKoIJAMVr79Z5pJKvMAwGA1UdEwQFMAMBAf8wDQYJ
+KoZIhvcNAQELBQADggEBAEjUUufLWvLP/EMThnA6eoTeHRhsORz8GzZjbKRsZH4V
+g1ZuvwdokHhdvLZFWn0QTlx/cwHNzExFNwSc3PtLXfpuLzRxBm4bINLhfTIsU7vw
+yDPAR66Pc4BHo6M8fF/OCURCUDE92vo0mGcx89uFWOLke5looU4CE8ZBbuClJM2c
+sMef0WJyqNadNyC+H2qaDAmJvOCs1OPIBPFtF4ym3irpngz7cI9e5D9ZiBxR8/P1
+4uPj+eQ8rDxwC/6RtLhK4oO2SZJUymZPhqNC1UmX5Wkuino3FWRzWDsHE1UC1Uxi
+z7htcO2zN7ZawRHam6Mip3qpk0R4qaOixdrkSEsoHeQ=
+-----END CERTIFICATE-----
+EOF
+}
+
+cleanup() {
+  for file in $keyfile $certfile $configfile; do
+    rm -f "$file"
+  done
+}
+
+
+LISTEN_PORT="3333"
+LISTEN_BIND="127.0.0.1"
+FORWARD_ADDRESS="http://localhost:3000"
+while getopts p:b:f:h OPT
+do
+    case $OPT in
+        p)
+          LISTEN_PORT=$OPTARG
+          ;;
+        b)
+          LISTEN_BIND=$OPTARG
+          ;;
+        f)
+          FORWARD_ADDRESS="${OPTARG%*/}"
+          ;;
+        h)
+          usage_exit
+          ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+generate-config
+trap cleanup EXIT
+
+h2o -c "$configfile"
