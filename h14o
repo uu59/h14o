@@ -47,7 +47,6 @@ CONF
 
 generate-config() {
   template > "$configfile"
-  echo $configfile
 }
 
 server-key() {
