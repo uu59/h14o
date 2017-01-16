@@ -35,8 +35,8 @@ hosts:
     listen:
       port: ${LISTEN_PORT}
       ssl:
-        key-file: $(key-file)
-        certificate-file: $(cert-file)
+        key-file: "$(key-file)"
+        certificate-file: "$(cert-file)"
     paths:
       "":
         proxy.reverse.url: "${FORWARD_ADDRESS}/"
