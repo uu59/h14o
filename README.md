@@ -15,3 +15,16 @@ Options:
   -f    Forward to here (default: http://localhost:3000/)
   -h    Show this message
 ```
+
+```console
+$ ./h14o
+Starting to forward: https://127.0.0.1:3333 -> http://localhost:3000
+
+[warning] failed to set TCP_FASTOPEN:Invalid argument
+[warning] failed to set TCP_FASTOPEN:Invalid argument
+[INFO] raised RLIMIT_NOFILE to 10240
+h2o server (pid:49022) is ready to serve requests
+...
+```
+
+Now you can visit https://127.0.0.1:3333/ to access http://localhost:3000/.
