@@ -141,4 +141,6 @@ shift $((OPTIND - 1))
 generate-config
 trap cleanup EXIT
 
+echo "Starting to forward: https://${LISTEN_BIND}:${LISTEN_PORT} -> ${FORWARD_ADDRESS}"
+echo
 h2o -c "$configfile"
