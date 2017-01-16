@@ -2,6 +2,8 @@
 
 https://www.google.co.jp/search?q=h14o&source=lnms&tbm=isch
 
+h14o is a wrapper of [h2o](h2o.examp1e.net) for the casual reverse proxying.
+
 ## Usage
 
 ```console
